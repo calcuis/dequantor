@@ -8,13 +8,24 @@ import torch.nn as nn
 import inspect
 from contextlib import nullcontext
 
-from ...utils import is_accelerate_available
 # credits should be given to huggingface and city96 for this part still
+from ...utils import is_accelerate_available, is_kernels_available
 
 if is_accelerate_available():
     import accelerate
     from accelerate import init_empty_weights
     from accelerate.hooks import add_hook_to_module, remove_hook_from_module
+
+can_use_cuda_kernels = (
+    os.getenv("DIFFUSERS_GGUF_CUDA_KERNELS", "false").lower() in ["1", "true", "yes"]
+    and torch.cuda.is_available()
+    and torch.cuda.get_device_capability()[0] >= 7
+)
+if can_use_cuda_kernels and is_kernels_available():
+    from kernels import get_kernel
+    ops = get_kernel("Isotr0py/ggml")
+else:
+    ops = None
 
 # Copied from diffusers.quantizers.bitsandbytes.utils._create_accelerate_new_hook
 def _create_accelerate_new_hook(old_hook):
