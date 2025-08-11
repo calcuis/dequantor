@@ -5,7 +5,7 @@ from gguf_connector.reader import GGML_QUANT_SIZES
 
 import torch
 import torch.nn as nn
-import inspect
+import inspect, os
 from contextlib import nullcontext
 
 # credits should be given to huggingface and city96 for this part still
